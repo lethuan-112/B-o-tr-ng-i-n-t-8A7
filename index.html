@@ -598,16 +598,21 @@ function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)re
 /* ===== guestbook ===== */
 const WISH=['Cảm ơn thầy cô đã luôn kiên nhẫn với chúng em. Chúc thầy cô thật nhiều sức khỏe!','Chúc thầy cô ngày 20/11 ngập tràn niềm vui và hạnh phúc!','Em sẽ luôn nhớ những bài học và lời dặn dò của thầy cô.','Thầy cô là người lái đò tuyệt vời nhất của chúng em!'];
 function gbGet(){try{return JSON.parse(localStorage.getItem('gb8a7')||'[]')}catch(e){return[]}}
-function gbSet(a){try{localStorage.setItem('gb8a7',JSON.stringify(a.slice(0,50)))}catch(e){}}
-function gbHTML(){return `<div class="gbk"><h3>Sổ lưu bút</h3><p class="cap">Viết đôi lời tri ân gửi thầy cô. Lời nhắn sẽ được dán lên bảng và lưu trong máy của bạn.</p>
+function gbSet(a){try{localStorage.setItem('gb8a7',JSON.stringify(a.slice(0,60)))}catch(e){}}
+function gbHTML(){return `<div class="gbk"><h3>Sổ lưu bút</h3><p class="cap">Viết đôi lời tri ân gửi thầy cô. Lời nhắn sẽ được dán lên bảng chung để cả lớp cùng đọc.</p>
  <div class="chips">${WISH.map((w,i)=>`<button type="button" data-w="${i}">${esc(w)}</button>`).join('')}</div>
  <form id="gf"><input id="gn" maxlength="30" placeholder="Tên của bạn" autocomplete="off"><textarea id="gt" maxlength="220" placeholder="Lời nhắn gửi thầy cô…"></textarea><button class="btn gold" type="submit">📌 Dán lên bảng</button></form><div class="gl" id="gl"></div></div>`}
-function gbInit(){const l=document.getElementById('gl');if(!l)return;const a=gbGet();
- l.innerHTML=a.length?a.map((n,i)=>`<div class="nt nt-${i%4}" style="--r:${[-2,1.5,-1,2.2][i%4]}deg"><button class="x" data-gd="${i}" aria-label="Xóa lời nhắn">×</button>${esc(n.t)}<b>– ${esc(n.n||'Một học sinh 8A7')}</b></div>`).join(''):'<p class="cap">Chưa có lời nhắn nào. Hãy là người đầu tiên!</p>'}
-document.addEventListener('click',e=>{const w=e.target.closest('[data-w]');if(w){const t=$('#gt');if(t){t.value=WISH[+w.dataset.w];t.focus()}return}
- const d=e.target.closest('[data-gd]');if(d){const a=gbGet();a.splice(+d.dataset.gd,1);gbSet(a);gbInit()}});
-document.addEventListener('submit',e=>{if(e.target.id!=='gf')return;e.preventDefault();const t=$('#gt').value.trim();if(!t){$('#gt').focus();return}
- const a=gbGet();a.unshift({n:$('#gn').value.trim(),t});gbSet(a);$('#gt').value='';gbInit();confetti()});
+const GBU='https://script.google.com/macros/s/AKfycby9qP1dvpr4AJDfVNwhRH-Ju96VEIeup6W1JSw6NM2CRnCJy--eQn3cLxWMXRlVjtCR/exec';
+function gbDraw(a){const l=document.getElementById('gl');if(!l)return;
+ l.innerHTML=a.length?a.map((n,i)=>`<div class="nt nt-${i%4}" style="--r:${[-2,1.5,-1,2.2][i%4]}deg">${esc(n.t)}<b>– ${esc(n.n||'Một học sinh 8A7')}</b></div>`).join(''):'<p class="cap">Chưa có lời nhắn nào. Hãy là người đầu tiên!</p>'}
+function gbLoad(){const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),9000);
+ return fetch(GBU,{signal:ctl.signal}).then(r=>r.json()).then(a=>{clearTimeout(to);if(Array.isArray(a)){gbSet(a.map(x=>({n:x.n,t:x.t})));gbDraw(gbGet())}}).catch(()=>{})}
+function gbInit(){if(!document.getElementById('gl'))return;gbDraw(gbGet());gbLoad()}
+document.addEventListener('click',e=>{const w=e.target.closest('[data-w]');if(w){const t=$('#gt');if(t){t.value=WISH[+w.dataset.w];t.focus()}}});
+document.addEventListener('submit',e=>{if(e.target.id!=='gf')return;e.preventDefault();const t=$('#gt').value.trim(),n=$('#gn').value.trim();if(!t){$('#gt').focus();return}
+ const a=gbGet();a.unshift({n,t});gbSet(a);$('#gt').value='';gbDraw(a);confetti();
+ const btn=e.target.querySelector('button[type=submit]');if(btn){btn.disabled=true;setTimeout(()=>btn.disabled=false,2500)}
+ fetch(GBU,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({n,t})}).then(()=>{setTimeout(gbLoad,2000);setTimeout(gbLoad,6000)}).catch(()=>{})});
 applyRS();
 render();
 </script>
