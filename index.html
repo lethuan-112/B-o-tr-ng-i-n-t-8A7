@@ -242,10 +242,20 @@ button:focus-visible,a:focus-visible,.tab:focus-visible,.mc:focus-visible{outlin
 .nt::before{content:'';position:absolute;top:-8px;left:50%;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#c0392b;box-shadow:0 2px 3px rgba(0,0,0,.3)}
 .nt b{display:block;margin-top:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;color:#18285a}
 .nt .x{position:absolute;right:6px;top:6px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.6);color:#18285a;font-size:13px;line-height:1}
+.nt.pile{transform:translate(var(--dx),var(--dy)) scale(.5) rotate(0deg)}
+.nt.burst{transition:transform 1.4s cubic-bezier(.25,.9,.3,1.08)}
 .nt-0{background:#fff3a8}.nt-1{background:#ffd2d2}.nt-2{background:#cfe8ff}.nt-3{background:#d4f2cf}
 .rdb{display:grid;place-items:center;padding:0}
 .rdb svg{width:26px;height:26px}
 #trail{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:93}
+.wv .wd{display:inline-block;white-space:nowrap}
+.wv .ch{display:inline-block;animation:wavy 2s ease-in-out infinite;animation-delay:calc(var(--i)*70ms)}
+@keyframes wavy{0%{transform:translateY(0)}12%{transform:translateY(-11px)}26%{transform:translateY(0)}100%{transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.wv .ch{animation:none}}
+.item{transition:background .2s,padding .25s,font-size .25s}
+.item:hover,.active>.item{font-size:16.8px;padding-top:18px;padding-bottom:18px}
+.sub button{transition:background .2s,color .2s,font-size .25s,padding .25s}
+.sub button:hover,.sub button.active{font-size:14.8px;padding-top:12px;padding-bottom:12px}
 </style>
 </head>
 <body>
@@ -388,7 +398,7 @@ const V={
 };
 function render(){
  const b=$('#book'); b.style.animation='none'; void b.offsetWidth; b.style.animation='';
- b.innerHTML=V[S.sec](); toc(); trackSync(); revealScan(); gameInit(); gbInit(); b.classList.remove('pgin');void b.offsetWidth;b.classList.add('pgin'); rpUpd(); if(S.sec!=='video')resumeMusic(); $('#main').scrollTo({top:0,behavior:'auto'}); scrollTo(0,0);
+ b.innerHTML=V[S.sec](); toc(); trackSync(); waveTitle(); revealScan(); gameInit(); gbInit(); b.classList.remove('pgin');void b.offsetWidth;b.classList.add('pgin'); rpUpd(); if(S.sec!=='video')resumeMusic(); $('#main').scrollTo({top:0,behavior:'auto'}); scrollTo(0,0);
 }
 $('#book').addEventListener('click',e=>{
  const t=e.target;
@@ -590,9 +600,12 @@ function gameInit(){
 function rpUpd(){const m=$('#main'),r=m.scrollHeight-m.clientHeight;$('#rpi').style.width=(r>8?Math.min(100,m.scrollTop/r*100):0)+'%'}
 $('#main').addEventListener('scroll',rpUpd,{passive:true});addEventListener('resize',rpUpd);
 /* ===== countdown to 20/11 ===== */
-function cdUpd(){const n=new Date(),t0=new Date(n.getFullYear(),10,20),d0=new Date(n.getFullYear(),n.getMonth(),n.getDate()),d=Math.round((t0-d0)/864e5),e=$('#cd');if(!e)return;
- e.innerHTML=d>0?'Còn <b>'+d+'</b> ngày nữa là 20/11 – Ngày Nhà giáo Việt Nam':d===0?'🎉 <b>Hôm nay là 20/11!</b> Chúc mừng ngày Nhà giáo Việt Nam!':'Cảm ơn thầy cô – hẹn 20/11 năm sau!'}
-cdUpd();
+function cdUpd(){const e=$('#cd');if(!e)return;const n=new Date(),y=n.getFullYear(),t0=new Date(y,10,20),t1=new Date(y,10,21);
+ if(n<t0){let s=Math.floor((t0-n)/1000);const d=Math.floor(s/86400);s%=86400;const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);s%=60;
+  e.innerHTML='Còn <b>'+d+'</b> ngày <b>'+h+'</b> giờ <b>'+m+'</b> phút <b>'+s+'</b> giây nữa là 20/11 – Ngày Nhà giáo Việt Nam'}
+ else if(n<t1)e.innerHTML='🎉 <b>Hôm nay là 20/11!</b> Chúc mừng ngày Nhà giáo Việt Nam!';
+ else e.innerHTML='Cảm ơn thầy cô – hẹn 20/11 năm sau!'}
+cdUpd();setInterval(cdUpd,1000);
 /* ===== confetti ===== */
 const cfc=$('#cf'),cfx=cfc.getContext('2d');let cfp=[],cfr=0;
 function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const d=Math.min(devicePixelRatio||1,2);cfc.width=innerWidth*d;cfc.height=innerHeight*d;
@@ -610,10 +623,18 @@ function gbHTML(){return `<div class="gbk"><h3>Sổ lưu bút</h3><p class="cap"
  <form id="gf"><input id="gn" maxlength="30" placeholder="Tên của bạn" autocomplete="off"><textarea id="gt" maxlength="220" placeholder="Lời nhắn gửi thầy cô…"></textarea><button class="btn gold" type="submit">📌 Dán lên bảng</button></form><div class="gl" id="gl"></div></div>`}
 const GBU='https://script.google.com/macros/s/AKfycby9qP1dvpr4AJDfVNwhRH-Ju96VEIeup6W1JSw6NM2CRnCJy--eQn3cLxWMXRlVjtCR/exec';
 function gbDraw(a){const l=document.getElementById('gl');if(!l)return;
- l.innerHTML=a.length?a.map((n,i)=>`<div class="nt nt-${i%4}" style="--r:${[-2,1.5,-1,2.2][i%4]}deg">${esc(n.t)}<b>– ${esc(n.n||'Một học sinh 8A7')}</b></div>`).join(''):'<p class="cap">Chưa có lời nhắn nào. Hãy là người đầu tiên!</p>'}
+ l.innerHTML=a.length?a.map((n,i)=>`<div class="nt nt-${i%4}" style="--r:${[-2,1.5,-1,2.2][i%4]}deg">${esc(n.t)}<b>– ${esc(n.n||'Một học sinh 8A7')}</b></div>`).join(''):'<p class="cap">Chưa có lời nhắn nào. Hãy là người đầu tiên!</p>';gbPile(l)}
+let gbDone=false,gbIO=null;
+function gbPile(l){if(gbIO){gbIO.disconnect();gbIO=null}if(gbDone||matchMedia('(prefers-reduced-motion: reduce)').matches||!('IntersectionObserver' in window))return;
+ const ns=[...l.querySelectorAll('.nt')];if(!ns.length)return;const lr=l.getBoundingClientRect(),f=ns[0].getBoundingClientRect(),cx=lr.left+lr.width/2,cy=f.top+f.height/2;
+ ns.forEach((n,i)=>{const r=n.getBoundingClientRect();n.style.setProperty('--dx',(cx-(r.left+r.width/2))+'px');n.style.setProperty('--dy',(cy-(r.top+r.height/2))+'px');n.style.zIndex=ns.length-i;n.classList.add('pile')});
+ gbIO=new IntersectionObserver(es=>{if(!es[0].isIntersecting)return;gbIO.disconnect();gbIO=null;gbDone=true;
+  ns.forEach((n,i)=>{n.style.transitionDelay=Math.round(i*Math.min(380,8000/ns.length))+'ms';n.classList.add('burst');n.classList.remove('pile')});
+  setTimeout(()=>ns.forEach(n=>{n.style.transitionDelay='';n.classList.remove('burst');n.style.zIndex=''}),1600+ns.length*Math.min(380,8000/ns.length))},{root:$('#main'),threshold:0,rootMargin:'0px 0px -30% 0px'});
+ gbIO.observe(l)}
 function gbLoad(){const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),9000);
  return fetch(GBU,{signal:ctl.signal}).then(r=>r.json()).then(a=>{clearTimeout(to);if(Array.isArray(a)){gbSet(a.map(x=>({n:x.n,t:x.t})));gbDraw(gbGet())}}).catch(()=>{})}
-function gbInit(){if(!document.getElementById('gl'))return;gbDraw(gbGet());gbLoad()}
+function gbInit(){if(!document.getElementById('gl'))return;gbDone=false;gbDraw(gbGet());gbLoad()}
 document.addEventListener('click',e=>{const w=e.target.closest('[data-w]');if(w){const t=$('#gt');if(t){t.value=WISH[+w.dataset.w];t.focus()}}});
 document.addEventListener('submit',e=>{if(e.target.id!=='gf')return;e.preventDefault();const t=$('#gt').value.trim(),n=$('#gn').value.trim();if(!t){$('#gt').focus();return}
  const a=gbGet();a.unshift({n,t});gbSet(a);$('#gt').value='';gbDraw(a);confetti();
@@ -628,13 +649,17 @@ const TRI=['📚','🌸','❤️','✏️','🌼','⭐','🍃','📖','🌺','�
 const trc=$('#trail'),trx=trc.getContext('2d');let trp=[],trr=0,trL={x:-99,y:-99},trD=1;
 function trSize(){trD=Math.min(devicePixelRatio||1,2);trc.width=innerWidth*trD;trc.height=innerHeight*trD}trSize();addEventListener('resize',trSize);
 function trLoop(){trx.setTransform(1,0,0,1,0,0);trx.clearRect(0,0,trc.width,trc.height);trx.textAlign='center';trx.textBaseline='middle';
- trp=trp.filter(p=>p.l>0);
- for(const p of trp){p.x+=p.vx;p.y+=p.vy;p.vy+=.03;p.l-=.02;p.r+=p.vr;trx.setTransform(trD,0,0,trD,p.x*trD,p.y*trD);trx.rotate(p.r);trx.globalAlpha=Math.max(0,p.l);trx.font=Math.round(p.s*(.6+.4*p.l))+'px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",serif';trx.fillText(p.e,0,0)}
+ const now=performance.now();trp=trp.filter(p=>now-p.t0<500);
+ for(const p of trp){p.l=1-(now-p.t0)/500;p.x+=p.vx;p.y+=p.vy;p.vy+=.03;p.r+=p.vr;trx.setTransform(trD,0,0,trD,p.x*trD,p.y*trD);trx.rotate(p.r);trx.globalAlpha=Math.max(0,p.l);trx.font=Math.round(p.s*(.6+.4*p.l))+'px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",serif';trx.fillText(p.e,0,0)}
  trr=trp.length?requestAnimationFrame(trLoop):0;if(!trp.length)trx.clearRect(0,0,trc.width,trc.height)}
 addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||!RS.trail||GP||!$('#ss').hidden)return;
  const dx=e.clientX-trL.x,dy=e.clientY-trL.y;if(dx*dx+dy*dy<6400)return;trL={x:e.clientX,y:e.clientY};
- trp.push({x:e.clientX,y:e.clientY,vx:(Math.random()-.5)*.9,vy:-.2+Math.random()*.5,l:1,s:15+Math.random()*10,r:(Math.random()-.5)*.6,vr:(Math.random()-.5)*.05,e:TRI[Math.floor(Math.random()*TRI.length)]});
+ trp.push({x:e.clientX,y:e.clientY,vx:(Math.random()-.5)*.9,vy:-.2+Math.random()*.5,l:1,t0:performance.now(),s:15+Math.random()*10,r:(Math.random()-.5)*.6,vr:(Math.random()-.5)*.05,e:TRI[Math.floor(Math.random()*TRI.length)]});
  if(trp.length>20)trp.shift();if(!trr)trr=requestAnimationFrame(trLoop)});
+
+function waveTitle(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ document.querySelectorAll('#book h1,#book .poem h2').forEach(h=>{if(h.dataset.wv)return;h.dataset.wv='1';const t=h.textContent.normalize('NFC');h.setAttribute('aria-label',t);let i=0;
+  h.innerHTML=t.split(' ').map(w=>'<span class="wd" aria-hidden="true">'+Array.from(w).map(c=>'<span class="ch" style="--i:'+(i++)+'">'+esc(c)+'</span>').join('')+'</span>').join(' ');i++;h.classList.add('wv')})}
 applyRS();
 render();
 </script>
