@@ -711,11 +711,11 @@ function waveTitle(){if(matchMedia('(prefers-reduced-motion: reduce)').matches||
 
 /* ===== export PDF ===== */
 function ptoast(t,ms){const e=$('#ptoast');e.textContent=t;e.classList.add('on');clearTimeout(ptoast.t);ptoast.t=setTimeout(()=>e.classList.remove('on'),ms||5000)}
-const PDFN='Tap-san-8A7.pdf';
+const PDFN='Bao-tuong-dien-tu-8A7.pdf',PDFD='Báo tường điện tử 8A7.pdf';
 function exportPDF(){
  ptoast('Đang tải file PDF…',3500);
- const dl=()=>{const a=document.createElement('a');a.href=PDFN;a.download=PDFN;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>ptoast('Đã gửi lệnh tải. Kiểm tra mục Tải xuống của trình duyệt nhé.',4500),900)};
- try{fetch(PDFN,{method:'HEAD'}).then(r=>{if(r.ok)dl();else ptoast('Chưa tìm thấy file PDF trên trang. Hãy tải file Tap-san-8A7.pdf lên cùng chỗ với index.html.',7000)}).catch(dl)}catch(e){dl()}}
+ const dl=()=>{const a=document.createElement('a');a.href=PDFN;a.download=PDFD;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>ptoast('Đã gửi lệnh tải. Kiểm tra mục Tải xuống của trình duyệt nhé.',4500),900)};
+ try{fetch(PDFN,{method:'HEAD'}).then(r=>{if(r.ok)dl();else ptoast('Chưa tìm thấy file PDF trên trang. Hãy tải file Bao-tuong-dien-tu-8A7.pdf lên cùng chỗ với index.html.',7000)}).catch(dl)}catch(e){dl()}}
 document.addEventListener('click',e=>{if(e.target.closest('#pdfb,[data-pdf]'))exportPDF()});
 applyRS();
 render();
